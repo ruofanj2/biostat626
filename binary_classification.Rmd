@@ -1,0 +1,115 @@
+---
+title: "midterm1_626"
+output: html_document
+date: '2023-03-27'
+---
+
+
+```{r, echo = TRUE}
+train_data = read.table("/Users/ruoooofanj2/Desktop/class/umich/biostat/biostat626/Midterm\ 1/training_data.txt", header = TRUE)
+test_data = read.table("/Users/ruoooofanj2/Desktop/class/umich/biostat/biostat626/Midterm\ 1/test_data.txt", header = TRUE)
+```
+
+```{r, echo = TRUE}
+library(caret)
+library(ggplot2)
+library(MASS)
+library(e1071)
+set.seed(1223)
+train_data$activity = ifelse(train_data$activity <= 3, 1, 0)
+train_data = train_data[, -1]
+index = sample(1:nrow(train_data), 0.8*nrow(train_data))
+train1 = train_data[index, ]
+test1 = train_data[-index, ]
+```
+
+1. logistic
+```{r, echo = TRUE}
+logistic_model = glm(activity ~., data = train1, family = binomial)
+logistic.probs = predict(logistic_model, test1, type = "response")
+```
+```{r, echo = TRUE}
+logistic.pred = rep(1, length(test1$activity))
+logistic.pred[logistic.probs<0.5] = 0
+table(logistic.pred, test1$activity)
+logacc = mean(logistic.pred == test1$activity)
+```
+2.lda
+```{r, echo = TRUE}
+lda.fit = lda(activity ~., data = train1)
+lda.pred = predict(lda.fit, test1)
+table(lda.pred$class, test1$activity)
+ldaacc = mean(lda.pred$class == test1$activity)
+```
+3.SVM
+```{r, echo = TRUE}
+svm_linear_01 = svm(activity ~., data = train1, kernel = "linear", cost = 0.1, scale = F, type = 'C-classification')
+pred_svmlinear_01 = predict(svm_linear_01, test1)
+table(test1$activity, pred_svmlinear_01)
+svmlinear_01_acc = mean(test1$activity == pred_svmlinear_01)
+```
+
+```{r, echo = TRUE}
+svm_linear_05 = svm(train1$activity ~., data = train1, kernel = "linear", cost = 0.5, scale = F, type = 'C-classification')
+pred_svmlinear_05 = predict(svm_linear_05, test1)
+table(test1$activity, pred_svmlinear_05)
+svmlinear_05_acc = mean(test1$activity == pred_svmlinear_05)
+```
+
+```{r, echo = TRUE}
+svm_linear_1 = svm(activity ~., data = train1, kernel = "linear", cost = 1, scale = F, type = 'C-classification')
+pred_svmlinear_1 = predict(svm_linear_1, test1)
+table(test1$activity, pred_svmlinear_1)
+svmlinear_1_acc = mean(test1$activity == pred_svmlinear_1)
+```
+
+```{r, echo = TRUE}
+svm_linear_10 = svm(activity ~., data = train1, kernel = "linear", cost = 10, scale = F, type = 'C-classification')
+pred_svmlinear_10 = predict(svm_linear_10, test1)
+table(test1$activity, pred_svmlinear_10)
+svmlinear_10_acc = mean(test1$activity == pred_svmlinear_10)
+```
+
+
+4.SVM with radial kernel
+```{r, echo = TRUE}
+svm_radial = svm(train1$activity ~., data = train1, kernel = "radial", cost = 10, scale = F, type = 'C-classification')
+pred_svmradial10 = predict(svm_radial, test1)
+table(test1$activity, pred_svmradial10)
+svmradial_10_acc = mean(test1$activity == pred_svmradial10 )
+```
+
+```{r, echo = TRUE}
+svm_radial = svm(train1$activity ~., data = train1, kernel = "radial", cost = 5, scale = F, type = 'C-classification')
+pred_svmradial5 = predict(svm_radial, test1)
+table(test1$activity, pred_svmradial5)
+svmradial_5_acc = mean(test1$activity == pred_svmradial5 )
+```
+
+```{r, echo = TRUE}
+svm_radial = svm(train1$activity ~., data = train1, kernel = "radial", cost = 1, scale = F, type = 'C-classification')
+pred_svmradial1 = predict(svm_radial, test1)
+table(test1$activity, pred_svmradial1)
+svmradial_1_acc = mean(test1$activity == pred_svmradial1)
+```
+
+
+For test file
+```{r, echo = TRUE}
+svm_radial = svm(activity ~., data = train_data, kernel = "radial", cost = 5, scale = F, type = 'C-classification')
+pred_svmlinear_test = predict(svm_linear, test_data)
+pred_svmradial_test = predict(svm_radial, test_data)
+identical(pred_svmlinear_test, pred_svmradial_test)
+pred_lda_test = predict(lda.fit, test_data)
+identical(pred_lda_test, pred_svmradial_test)
+```
+
+```{r, echo = TRUE}
+write.table(pred_svmradial_test,row.names = FALSE, col.names = FALSE, file = "binary_1223.txt", quote = FALSE)
+```
+
+
+
+
+
+
